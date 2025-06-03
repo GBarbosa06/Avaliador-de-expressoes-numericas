@@ -207,12 +207,10 @@ char *getFormaPosFixa(char *infixa) {
     infixa_copia[MAX-1] = '\0';
 
     // converte vírgulas em pontos, para melhor organização e compatibilidade com os cálculos feitos no código
-    /* 
     for (int i = 0; infixa_copia[i] != '\0'; i++) {
         if (infixa_copia[i] == ',') infixa_copia[i] = '.';
     }
-     */
-
+    
     // Cria uma pilha vazia
     PilhaStr pilha;
     pilha.topo = -1;
