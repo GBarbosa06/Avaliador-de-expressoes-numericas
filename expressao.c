@@ -11,7 +11,7 @@
 
 // Pilha de strings para operadores e funções
 typedef struct {
-    char items[MAX][32];
+    char items[MAX][MAX];
     int topo;
 } PilhaStr;
 
@@ -37,6 +37,39 @@ char *peek(PilhaStr *p) {
     }
     return NULL;
 }
+
+// Essa struct é usada para o getFormaInFixa, para armazenar a expressão e sua precedência
+// Importante para a formatação correta da expressão final sem excesso de parênteses.
+typedef struct {
+    char str[MAX];
+    int precedencia;
+} Expr;
+
+// Pilha de expressões para a conversão de posfixa para infixa.
+    typedef struct {
+        Expr items[MAX];
+        int topo;
+    } PilhaExpr;
+
+    void pushExpr(PilhaExpr *p, Expr expr) {
+        if (p->topo < MAX - 1) {
+            p->items[++(p->topo)] = expr;
+        }
+    }
+    Expr popExpr(PilhaExpr *p) {
+        if (p->topo >= 0) {
+            return p->items[(p->topo)--];
+        }
+        Expr vazio = {"", 0};
+        return vazio;
+    }
+    Expr peekExpr(PilhaExpr *p) {
+        if (p->topo >= 0) {
+            return p->items[p->topo];
+        }
+        Expr vazio = {"", 0};
+        return vazio;
+    }
 
 // Verifica se o token é um operador matemático (+, -, *, /, %, ^).
 int ehOperador(const char *s) {
@@ -75,57 +108,80 @@ char *getFormaInFixa(char *posfixa) {
 
     char posfixa_copia[MAX];
     strncpy(posfixa_copia, posfixa, MAX);
-    posfixa_copia[MAX-1] = '\0';
+    posfixa_copia[MAX - 1] = '\0';
 
-    typedef struct {
-        char items[MAX][MAX];
-        int topo;
-    } PilhaStr;
-
-    PilhaStr pilha;
+    PilhaExpr pilha;
     pilha.topo = -1;
 
-    char *token = strtok(posfixa, " ");
-    while (token != NULL) { 
-        // converte vírgula para ponto no token, se houver
+    char *token = strtok(posfixa_copia, " ");
+    while (token != NULL) {
         for (int j = 0; token[j] != '\0'; j++) {
             if (token[j] == ',') token[j] = '.';
         }
-        if (isdigit(token[0]) || (token[0] == '.' && isdigit(token[1])) || 
+
+        // Número
+        if (isdigit(token[0]) || (token[0] == '.' && isdigit(token[1])) ||
             (token[0] == '-' && (isdigit(token[1]) || token[1] == '.'))) {
-            strcpy(pilha.items[++(pilha.topo)], token);
+            Expr e;
+            strcpy(e.str, token);
+            e.precedencia = 100; // máxima
+            pushExpr(&pilha, e);
         }
-        else if (strcmp(token, "+") == 0 || strcmp(token, "-") == 0 ||
-                 strcmp(token, "*") == 0 || strcmp(token, "/") == 0 ||
-                 strcmp(token, "%") == 0 || strcmp(token, "^") == 0) {
-            // Operador binário
-            if (pilha.topo < 1) {
+
+        // Operador binário
+        else if (ehOperador(token)) {
+            Expr op2 = popExpr(&pilha);
+            Expr op1 = popExpr(&pilha);
+            if (strlen(op1.str) == 0 || strlen(op2.str) == 0) {
                 strcpy(infixa, "ERRO: expressao mal formada");
                 return infixa;
             }
 
-            char op2[MAX], op1[MAX], expr[MAX];
-            strcpy(op2, pilha.items[pilha.topo--]);
-            strcpy(op1, pilha.items[pilha.topo--]);
-            snprintf(expr, MAX, "(%s %s %s)", op1, token, op2);
-            strcpy(pilha.items[++(pilha.topo)], expr);
+            int prec = precedencia(token);
+            char s1[MAX], s2[MAX], expr[MAX];
+
+            // Parênteses conforme precedência
+            if (op1.precedencia < prec)
+                snprintf(s1, MAX, "(%s)", op1.str);
+            else
+                strcpy(s1, op1.str);
+
+            if (op2.precedencia < prec ||
+                (op2.precedencia == prec && !associativaEsquerda(token)))
+                snprintf(s2, MAX, "(%s)", op2.str);
+            else
+                strcpy(s2, op2.str);
+
+            snprintf(expr, MAX, "%s %s %s", s1, token, s2);
+
+            Expr novo;
+            strcpy(novo.str, expr);
+            novo.precedencia = prec;
+            pushExpr(&pilha, novo);
         }
-        else if (strcmp(token, "sen") == 0 || strcmp(token, "cos") == 0 ||
-                 strcmp(token, "tg") == 0 || strcmp(token, "log") == 0 ||
-                 strcmp(token, "raiz") == 0) {
-            // Função unária
-            if (pilha.topo < 0) {
+
+        // Função unária
+        else if (ehFuncao(token)) {
+            Expr op = popExpr(&pilha);
+
+            if (strlen(op.str) == 0) {
                 strcpy(infixa, "ERRO: expressao mal formada");
                 return infixa;
             }
 
-            char op[MAX], expr[MAX];
-            strcpy(op, pilha.items[pilha.topo--]);
-            snprintf(expr, MAX, "%s(%s)", token, op);
-            strcpy(pilha.items[++(pilha.topo)], expr);
+            char expr[MAX];
+            snprintf(expr, MAX, "%s(%s)", token, op.str);
+
+            Expr novo;
+            strcpy(novo.str, expr);
+            novo.precedencia = precedencia(token); // geralmente 4
+            pushExpr(&pilha, novo);
+            token = strtok(NULL, " ");
+            continue;
         }
+
+        // Token inválido
         else {
-            // Token inválido
             strcpy(infixa, "ERRO: token invalido");
             return infixa;
         }
@@ -134,7 +190,7 @@ char *getFormaInFixa(char *posfixa) {
     }
 
     if (pilha.topo == 0) {
-        strcpy(infixa, pilha.items[0]);
+        strcpy(infixa, popExpr(&pilha).str);
     } else {
         strcpy(infixa, "ERRO: expressao mal formada");
     }
@@ -157,6 +213,7 @@ char *getFormaPosFixa(char *infixa) {
     }
      */
 
+    // Cria uma pilha vazia
     PilhaStr pilha;
     pilha.topo = -1;
 
@@ -281,13 +338,14 @@ float getValorInFixa(char *StrInFixa){
 */
 
 int main() {
-    char infixa[MAX] = "sen(45) ^2 + 0,5";
+    
+    char posfixa[MAX] = "0.5 45 sen 2 ^ +";
+    printf("Pos-fixa: %s\n", posfixa);
+    printf("Infixa getFormaInFixa: %s\n\n", getFormaInFixa(posfixa));
+    
+    char infixa[MAX] = "sen(45)^2 + 0.5";
     printf("Infixa: %s\n", infixa);
     printf("Pos-fixa: %s\n\n", getFormaPosFixa(infixa));
-
-    char posfixa1[MAX] = "0.5 45 sen 2 ^ +";
-    printf("Pos-fixa: %s\n", posfixa1);
-    printf("Infixa: %s\n\n", getFormaInFixa(posfixa1));
 
     return 0;
 }
