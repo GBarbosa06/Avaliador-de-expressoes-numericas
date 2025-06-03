@@ -151,10 +151,11 @@ char *getFormaPosFixa(char *infixa) {
     infixa_copia[MAX-1] = '\0';
 
     // converte vírgulas em pontos, para melhor organização e compatibilidade com os cálculos feitos no código
+    /* 
     for (int i = 0; infixa_copia[i] != '\0'; i++) {
         if (infixa_copia[i] == ',') infixa_copia[i] = '.';
     }
-
+     */
 
     PilhaStr pilha;
     pilha.topo = -1;
@@ -167,14 +168,14 @@ char *getFormaPosFixa(char *infixa) {
         }
 
         // reconhece número normal, decimal e negativo, depois copia e adiciona à saída com espaço
-        if (isdigit(infixa_copia[i]) || (infixa_copia[i] == '.' && isdigit(infixa_copia[i + 1])) ||
-            (infixa_copia[i] == '-' && (isdigit(infixa_copia[i + 1]) || infixa_copia[i + 1] == '.'))) {
+        if (isdigit(infixa_copia[i]) || (infixa_copia[i] == '.' || (infixa_copia[i] == ',' && isdigit(infixa_copia[i + 1]))) ||
+            (infixa_copia[i] == '-' && (isdigit(infixa_copia[i + 1]) || infixa_copia[i + 1] == '.' || infixa_copia[i + 1] == ','))) {
             char numero[32];
             int k = 0;
             if (infixa_copia[i] == '-') {
                 numero[k++] = infixa_copia[i++];
             }
-            while (isdigit(infixa_copia[i]) || infixa_copia[i] == '.') {
+            while (isdigit(infixa_copia[i]) || infixa_copia[i] == '.' || infixa_copia[i] == ',') {
                 numero[k++] = infixa_copia[i++];
             }
             numero[k] = '\0';
@@ -261,19 +262,26 @@ char *getFormaPosFixa(char *infixa) {
 }
 
 
+/* 
+    ! em ambas as funções do bloco 2 é importante  rodar uma função mais ou menos assim para converter de , para . quando necessário:
+   for (int i = 0; expressao[i] != '\0'; i++) {
+       if (expressao[i] == ',') expressao[i] = '.';
+   } */
 
 /* 
-float getValorPosFixa(char *StrPosFixa){
 
+
+float getValorPosFixa(char *StrPosFixa){
+    ver nota acima
 }
 
 float getValorInFixa(char *StrInFixa){
-
+    ver nota acima
 }
 */
 
 int main() {
-    char infixa[MAX] = "sen(45) ^2 + 0,5 ";
+    char infixa[MAX] = "sen(45) ^ 2 + 0,5";
     printf("Infixa: %s\n", infixa);
     printf("Pos-fixa: %s\n\n", getFormaPosFixa(infixa));
 
