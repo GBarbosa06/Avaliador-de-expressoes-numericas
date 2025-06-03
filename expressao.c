@@ -281,7 +281,7 @@ float getValorInFixa(char *StrInFixa){
 */
 
 int main() {
-    char infixa[MAX] = "sen(45) ^ 2 + 0,5";
+    char infixa[MAX] = "sen(45) ^2 + 0,5";
     printf("Infixa: %s\n", infixa);
     printf("Pos-fixa: %s\n\n", getFormaPosFixa(infixa));
 
