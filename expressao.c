@@ -39,7 +39,7 @@ char *peek(PilhaStr *p) {
 }
 
 // Essa struct é usada para o getFormaInFixa, para armazenar a expressão e sua precedência
-// Importante para a formatação correta da expressão final sem excesso de parênteses.
+// Importante para a formatação correta da expressão infixa final sem excesso de parênteses.
 typedef struct {
     char str[MAX];
     int precedencia;
@@ -119,7 +119,7 @@ char *getFormaInFixa(char *posfixa) {
             if (token[j] == ',') token[j] = '.';
         }
 
-        // Número
+        // reconhece número normal, decimal e negativo, depois copia e adiciona à saída com espaço
         if (isdigit(token[0]) || (token[0] == '.' && isdigit(token[1])) ||
             (token[0] == '-' && (isdigit(token[1]) || token[1] == '.'))) {
             Expr e;
@@ -140,7 +140,8 @@ char *getFormaInFixa(char *posfixa) {
             int prec = precedencia(token);
             char s1[MAX], s2[MAX], expr[MAX];
 
-            // Parênteses conforme precedência
+            // Aqui é onde ocorre a formatação dos parênteses
+            // É considerada a precedência dos operadores para evitar redundâncias 
             if (op1.precedencia < prec)
                 snprintf(s1, MAX, "(%s)", op1.str);
             else
@@ -180,7 +181,7 @@ char *getFormaInFixa(char *posfixa) {
             continue;
         }
 
-        // Token inválido
+        // Se o token não for reconhecido, retorna erro
         else {
             strcpy(infixa, "ERRO: token invalido");
             return infixa;
@@ -304,7 +305,7 @@ char *getFormaPosFixa(char *infixa) {
             continue;
         }
 
-        i++; // se não reconheceu nada, avança
+        i++; // se não reconheceu nada, avança para o próximo caractere
     }
 
     // Desempilha o restante
@@ -317,31 +318,37 @@ char *getFormaPosFixa(char *infixa) {
 }
 
 
+
 /* 
     ! em ambas as funções do bloco 2 é importante  rodar uma função mais ou menos assim para converter de , para . quando necessário:
    for (int i = 0; expressao[i] != '\0'; i++) {
        if (expressao[i] == ',') expressao[i] = '.';
-   } */
+   }
+   
+   * Em ambas as getFormas tem essa conversão, mas caso a função seja rodada direto na entrada do usuário, vai dar erro sem essa conversão.
 
 /* 
 
-
 float getValorPosFixa(char *StrPosFixa){
-    ver nota acima
+    * ver nota acima
+    * Lembrar de considerar a associatividade ("^" é a única que não é associativa à esquerda)
 }
 
 float getValorInFixa(char *StrInFixa){
-    ver nota acima
+    * ver nota acima
+    * Lembrar de considerar a associatividade ("^" é a única que não é associativa à esquerda)
 }
 */
 
+
+// esse main é apenas para testes rápidos, não faz parte do código final
 int main() {
     
-    char posfixa[MAX] = "0.5 45 sen 2 ^ +";
+    char posfixa[MAX] = "25 21 + 4 / 3 1 + *";
     printf("Pos-fixa: %s\n", posfixa);
     printf("Infixa getFormaInFixa: %s\n\n", getFormaInFixa(posfixa));
     
-    char infixa[MAX] = "sen(45)^2 + 0.5";
+    char infixa[MAX] = "(25 + 21) / 4 * (3 + 1)";
     printf("Infixa: %s\n", infixa);
     printf("Pos-fixa: %s\n\n", getFormaPosFixa(infixa));
 
