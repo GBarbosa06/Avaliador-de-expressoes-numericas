@@ -80,7 +80,7 @@ int ehNumeroValido(const char *s) {
     // sinal opcional no começo
     if (s[i] == '-' || s[i] == '+') i++;
 
-    for (i ; s[i] != '\0'; i++) {
+    for (; s[i] != '\0'; i++) {
         if (isdigit(s[i])) {
             temDigito = 1;
         }
@@ -124,6 +124,34 @@ int associativaEsquerda(const char *op) {
     return strcmp(op, "^") != 0;
 }
 
+// Validação da expressão pós-fixada
+int validarPosfixa(const char *posfixa) {
+    int count = 0;
+    char copia[MAX];
+    strncpy(copia, posfixa, MAX);
+
+    char *token = strtok(copia, " ");
+    while (token != NULL) {
+        if (ehNumeroValido(token)) {
+            count++;
+        }
+        else if (ehOperador(token)) {
+            if (count < 2) return 0;
+            count--; // consome 2, produz 1
+        }
+        else if (ehFuncao(token)) {
+            if (count < 1) return 0;
+            // consome 1, produz 1 (mantém count)
+        }
+        else {
+            return 0; // token inválido
+        }
+
+        token = strtok(NULL, " ");
+    }
+
+    return count == 1;
+}
 
 //funções principais
 
@@ -342,7 +370,9 @@ char *getFormaPosFixa(char *infixa) {
         strcat(posfixa, pop(&pilha));
         strcat(posfixa, " ");
     }
-
+    if (!validarPosfixa(posfixa)) {
+        strcpy(posfixa, "ERRO: expressao mal formada");
+    }
     return posfixa;
 }
 
@@ -354,10 +384,10 @@ char *getFormaPosFixa(char *infixa) {
        if (expressao[i] == ',') expressao[i] = '.';
    }
    
-   * Em ambas as getFormas tem essa conversão, mas caso a função seja rodada direto na entrada do usuário, vai dar erro sem essa conversão.
+    Em ambas as getFormas tem essa conversão, mas caso a função seja rodada direto na entrada do usuário, vai dar erro sem essa conversão.
+*/
 
-/* 
-
+/*
 float getValorPosFixa(char *StrPosFixa){
     * ver nota acima
     * Lembrar de considerar a associatividade ("^" é a única que não é associativa à esquerda)
@@ -368,18 +398,3 @@ float getValorInFixa(char *StrInFixa){
     * Lembrar de considerar a associatividade ("^" é a única que não é associativa à esquerda)
 }
 */
-
-
-// esse main é apenas para testes rápidos, não faz parte do código final
-int main() {
-    
-    char posfixa[MAX] = "3 4 + 5 * ";
-    printf("Pos-fixa: %s\n", posfixa);
-    printf("Infixa getFormaInFixa: %s\n\n", getFormaInFixa(posfixa));
-    
-    char infixa[MAX] = "sen(45) ^2 + 0,5 ";
-    printf("Infixa: %s\n", infixa);
-    printf("Pos-fixa: %s\n\n", getFormaPosFixa(infixa));
-
-    return 0;
-}
