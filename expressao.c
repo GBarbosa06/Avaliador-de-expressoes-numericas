@@ -257,6 +257,12 @@ char *getFormaPosFixa(char *infixa) {
             while (isdigit(infixa_copia[i]) || infixa_copia[i] == '.' || infixa_copia[i] == ',') {
                 numero[k++] = infixa_copia[i++];
             }
+
+            // Verifica se o número é válido
+            if (!ehNumeroValido(numero)) {
+                strcpy(posfixa, "ERRO: numero invalido");
+                return posfixa;
+            }
             numero[k] = '\0';
             strcat(posfixa, numero);
             strcat(posfixa, " ");
@@ -371,7 +377,7 @@ int main() {
     printf("Pos-fixa: %s\n", posfixa);
     printf("Infixa getFormaInFixa: %s\n\n", getFormaInFixa(posfixa));
     
-    char infixa[MAX] = "(25 + 21) / 4 * (3 + 1)";
+    char infixa[MAX] = "sen(45) ^2 + 0,5 ";
     printf("Infixa: %s\n", infixa);
     printf("Pos-fixa: %s\n\n", getFormaPosFixa(infixa));
 
