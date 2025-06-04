@@ -71,6 +71,31 @@ typedef struct {
         return vazio;
     }
 
+// Verifica se o token é um número válido (inteiro, negativo ou decimal).
+int ehNumeroValido(const char *s) {
+    int i = 0;
+    int temDigito = 0;
+    int temPonto = 0;
+
+    // sinal opcional no começo
+    if (s[i] == '-' || s[i] == '+') i++;
+
+    for (i ; s[i] != '\0'; i++) {
+        if (isdigit(s[i])) {
+            temDigito = 1;
+        }
+        else if (s[i] == '.') {
+                if (temPonto) return 0; // só um ponto permitido
+            temPonto = 1;
+        }
+        else {
+            return 0; // caractere inválido
+        }
+    }
+
+    return temDigito; // válido só se tiver pelo menos um dígito
+}
+
 // Verifica se o token é um operador matemático (+, -, *, /, %, ^).
 int ehOperador(const char *s) {
     return strcmp(s, "+") == 0 || strcmp(s, "-") == 0 ||
@@ -119,9 +144,7 @@ char *getFormaInFixa(char *posfixa) {
             if (token[j] == ',') token[j] = '.';
         }
 
-        // reconhece número normal, decimal e negativo, depois copia e adiciona à saída com espaço
-        if (isdigit(token[0]) || (token[0] == '.' && isdigit(token[1])) ||
-            (token[0] == '-' && (isdigit(token[1]) || token[1] == '.'))) {
+        if (ehNumeroValido(token)) {
             Expr e;
             strcpy(e.str, token);
             e.precedencia = 100; // máxima
@@ -344,7 +367,7 @@ float getValorInFixa(char *StrInFixa){
 // esse main é apenas para testes rápidos, não faz parte do código final
 int main() {
     
-    char posfixa[MAX] = "25 21 + 4 / 3 1 + *";
+    char posfixa[MAX] = "3 4 + 5 * ";
     printf("Pos-fixa: %s\n", posfixa);
     printf("Infixa getFormaInFixa: %s\n\n", getFormaInFixa(posfixa));
     
