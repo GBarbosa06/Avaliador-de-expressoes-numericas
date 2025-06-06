@@ -273,7 +273,6 @@ char *getFormaInFixa(char *posfixa) {
 
 char *getFormaPosFixa(char *infixa) {
     static char posfixa[MAX];
-    memset(posfixa, 0, sizeof(posfixa));
     posfixa[0] = '\0';
     
 
