@@ -514,7 +514,7 @@ float getValorInFixa(char *StrInFixa) {
     return getValorPosFixa(posfixa);
 }
 
-int main() {
+/* int main() {
     char posfixa[MAX] = "0.5 45 sen 2 ^ +";
     char posfixaCopia[MAX];
     strcpy(posfixaCopia, posfixa);
@@ -527,11 +527,11 @@ int main() {
 
 
     // ! Quando getFormaPosFixa é chamado antes de getValorPosFixa, dá erro em getValorInFixa
-    /* printf("Infixa: %s\n", infixa);
-    printf("Pos-fixa: %s\n\n", getFormaPosFixa(infixaCopia)); */
+    // ? a solução é chamar getFormaPosFixa com um valor válido de infixa antes de chamar getValorInFixa
 
     printf("Valor da pos-fixa: %.2f\n", getValorPosFixa(posfixa));
     printf("Valor da infixa: %.2f\n", getValorInFixa(infixa));
 
     return 0;
 }
+ */
